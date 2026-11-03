@@ -33,16 +33,27 @@ Rules that keep the patch small:
 
 ## Syncing with upstream
 
-`main` is the DartNative version. Merge (don't rebase) each upstream release,
-so every conflict is resolved once:
+Two branches:
+
+- **`main`** mirrors upstream exactly. Never commit to it; keep it current with
+  GitHub's "Sync fork" button or `gh repo sync hectorAguero/dartnative_soloud`.
+- **`dartnative`** is the DartNative version: the default branch, and what
+  gets published. `git diff main dartnative` is always the whole patch.
+
+Merge (don't rebase) each upstream release into `dartnative`, so every
+conflict is resolved once:
 
 ```bash
-git fetch upstream --tags
-git switch -c sync/vX.Y.Z main
+gh repo sync hectorAguero/dartnative_soloud   # main ← upstream
+git fetch origin --tags
+git switch -c sync/vX.Y.Z origin/dartnative
 git merge vX.Y.Z            # resolve conflicts with the table above
 tool/dartnative_check.sh --build
-git push -u origin sync/vX.Y.Z   # open a PR into main
+git push -u origin sync/vX.Y.Z   # open a PR into dartnative
 ```
+
+Other DartNative work goes the same way: a feature branch from `dartnative`
+and a PR into `dartnative`. Changes meant for upstream branch from `main`.
 
 `tool/dartnative_check.sh` fails if upstream added a Flutter-only import. It
 then analyzes the package and `dn_example` against the DartNative SDK, and
