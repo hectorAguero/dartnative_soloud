@@ -2,8 +2,7 @@
 
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_soloud/src/dartnative/flutter_compat.dart';
 import 'package:flutter_soloud/src/audio_source.dart';
 import 'package:flutter_soloud/src/audio_visualization_data.dart';
 import 'package:flutter_soloud/src/bindings/bindings_player.dart';

@@ -2,7 +2,7 @@
 
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter_soloud/src/dartnative/flutter_compat.dart';
 import 'package:flutter_soloud/src/bindings/soloud_controller.dart';
 import 'package:flutter_soloud/src/enums.dart';
 import 'package:flutter_soloud/src/filters/filters.dart';

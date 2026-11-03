@@ -1,7 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_soloud/src/dartnative/flutter_compat.dart';
 import 'package:flutter_soloud/src/audio_source.dart';
 import 'package:flutter_soloud/src/enums.dart';
 import 'package:flutter_soloud/src/exceptions/exceptions.dart';
@@ -11,7 +10,8 @@ import 'package:logging/logging.dart';
 // ignore: unnecessary_import
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart' as path_provider;
+import 'package:flutter_soloud/src/dartnative/path_provider_compat.dart'
+    as path_provider;
 
 /// A long-living helper class that loads assets and URLs into temporary files
 /// that can be played by SoLoud.

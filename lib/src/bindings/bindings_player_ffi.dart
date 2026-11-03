@@ -9,7 +9,6 @@ import 'dart:async';
 import 'dart:ffi' as ffi;
 import 'dart:isolate';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter_soloud/src/audio_visualization_data.dart';
@@ -87,8 +86,9 @@ class FlutterSoLoudFfi extends FlutterSoLoud {
   /// only fires there, so a worker isolate would see `null`. Both call sites
   /// ([prepareEngineInit] and [setDartEventCallbacks]) run on that isolate,
   /// before any work is handed to `Isolate.run`.
-  static int get currentEngineId =>
-      ui.PlatformDispatcher.instance.engineId ?? noEngineId;
+  // DartNative fork: there is no FlutterEngine (and no dart:ui), so this is
+  // always the no-engine sentinel, as on embedders that expose no id.
+  static int get currentEngineId => noEngineId;
 
   // ////////////////////////////////////////////////
   // Callbacks impl

@@ -1,0 +1,33 @@
+PODS:
+  - dartnative_ios (1.0.0):
+    - FlexLayout (= 2.0.10)
+  - dartnative_path_provider (1.0.0)
+  - DartNativeCore (1.0.0)
+  - FlexLayout (2.0.10)
+
+DEPENDENCIES:
+  - dartnative_ios (from `.symlinks/plugins/dartnative_ios/ios`)
+  - dartnative_path_provider (from `.symlinks/plugins/dartnative_path_provider/ios`)
+  - DartNativeCore (from `DartNative`)
+
+SPEC REPOS:
+  trunk:
+    - FlexLayout
+
+EXTERNAL SOURCES:
+  dartnative_ios:
+    :path: ".symlinks/plugins/dartnative_ios/ios"
+  dartnative_path_provider:
+    :path: ".symlinks/plugins/dartnative_path_provider/ios"
+  DartNativeCore:
+    :path: DartNative
+
+SPEC CHECKSUMS:
+  dartnative_ios: c5e063a6bc126b1f88144c1c16ff9c200caf1e9e
+  dartnative_path_provider: 6ba9009b0d1bbd4cd70c036ff7266916fca2566a
+  DartNativeCore: 225e49d9e35e234bcadc6b81586fc4275a1006ee
+  FlexLayout: ea94491c923485f7f28891cb5b10245d22df380b
+
+PODFILE CHECKSUM: 0eb83f38c0038ca753c95effc43e8a0e67ec8c2c
+
+COCOAPODS: 1.17.0

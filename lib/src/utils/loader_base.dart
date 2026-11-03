@@ -1,6 +1,6 @@
 // ignore_for_file: public_member_api_docs
 
-import 'package:flutter/services.dart';
+import 'package:flutter_soloud/src/dartnative/flutter_compat.dart';
 import 'package:flutter_soloud/src/audio_source.dart';
 import 'package:flutter_soloud/src/enums.dart';
 import 'package:http/http.dart' as http;
