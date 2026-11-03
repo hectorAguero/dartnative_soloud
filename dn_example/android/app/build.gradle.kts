@@ -51,3 +51,16 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.core:core-ktx:1.12.0")
 }
+
+// Workaround for a DartNative Gradle bug: compileFlutterBuild<Variant> writes
+// the libraries built by package build hooks (here libflutter_soloud_plugin.so)
+// into build/native_assets/android/jniLibs, but merge<Variant>JniLibFolders
+// reads that folder without depending on it. Gradle 8.14 then fails every
+// incremental build (the first build after `dn clean` passes). Remove once
+// DartNative declares the dependency itself.
+afterEvaluate {
+    listOf("Debug", "Profile", "Release").forEach { variant ->
+        val compile = tasks.findByName("compileFlutterBuild$variant") ?: return@forEach
+        tasks.findByName("merge${variant}JniLibFolders")?.dependsOn(compile)
+    }
+}
