@@ -72,6 +72,21 @@ class _SoLoudDemoState extends State<SoLoudDemo> {
     _add('opus asset playing (3 s) • ${_soloud.getLength(_opus!)}');
   });
 
+  /// Keeps native code calling Dart for the next 8 s, so a hot restart
+  /// (capital R) pressed meanwhile lands while callbacks are still firing: 200
+  /// quiet voices whose native scheduleStop()s end one every 40 ms (each
+  /// end fires the voice-ended callback), plus the visualization callback.
+  Future<void> _stressCallbacks() => _run('callback stress', () async {
+    _tone ??= await _soloud.loadWaveform(WaveForm.sin, true, 0.25, 1);
+    _soloud.setWaveformFreq(_tone!, 440);
+    for (var i = 0; i < 200; i++) {
+      final handle = _soloud.play(_tone!, volume: 0.005);
+      _soloud.scheduleStop(handle, Duration(milliseconds: 100 + i * 40));
+    }
+    _soloud.setVisualizationEnabled(true);
+    _add('callback stress running (8 s): hot restart now');
+  });
+
   Future<void> _deinit() => _run('deinit', () async {
     _soloud.deinit();
     _tone = _explosion = _opus = null;
@@ -99,6 +114,11 @@ class _SoLoudDemoState extends State<SoLoudDemo> {
             FilledButton(
               onPressed: _playOpus,
               child: const Text('Opus asset'),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: _stressCallbacks,
+              child: const Text('Callback stress'),
             ),
             const SizedBox(height: 8),
             TextButton(onPressed: _deinit, child: const Text('Deinit')),

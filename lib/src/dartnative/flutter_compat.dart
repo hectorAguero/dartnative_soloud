@@ -7,14 +7,34 @@
 // `package:flutter/*` imports for this one. Keep it that way: the smaller the
 // diff against upstream, the easier each rebase.
 
+import 'dart:async';
 import 'dart:io' show Platform;
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:dartnative/dartnative.dart' as dn;
 
 export 'dart:typed_data';
-export 'package:dartnative/dartnative.dart' show compute, debugPrint;
+export 'package:dartnative/dartnative.dart' show debugPrint;
 export 'package:meta/meta.dart';
+
+/// Mirror of Flutter's `ComputeCallback`.
+typedef ComputeCallback<M, R> = FutureOr<R> Function(M message);
+
+/// Mirror of Flutter's `compute`: runs [callback] on a short-lived isolate,
+/// as Flutter does with `Isolate.run`.
+///
+/// Not DartNative's `compute`. That one runs on a background pool whose
+/// isolates stay alive between calls, and a hot restart sometimes hangs for
+/// good while `dn` kills them (DartNative 1.5.0, reproduced with no SoLoud
+/// code involved: https://github.com/DartNative/dartnative/issues/82). An
+/// isolate from `Isolate.run` is gone once its load finishes, so a restart
+/// has nothing to kill.
+Future<R> compute<M, R>(
+  ComputeCallback<M, R> callback,
+  M message, {
+  String? debugLabel,
+}) => Isolate.run(() => callback(message), debugName: debugLabel ?? 'compute');
 
 /// DartNative runs on iOS and Android only, never on the web.
 const bool kIsWeb = false;
