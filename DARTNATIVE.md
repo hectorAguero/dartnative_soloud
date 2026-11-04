@@ -62,13 +62,14 @@ that, run `dn_example` on a device and press each button.
 
 ## Hot restart
 
-Hot restart needs no fork-specific code. Upstream already sends every native
-call into Dart through a gate (`src/dart_callback_gate.h`). A `NativeFinalizer`
+Keeping callbacks safe needs no fork-specific code. Upstream already sends
+every native call into Dart through a gate (`src/dart_callback_gate.h`). A `NativeFinalizer`
 retires that gate when the isolate shuts down. With no FlutterEngine id, it
 retires every callback. The Dart VM runs native finalizers before it deletes
 the isolate's FFI callbacks (`Isolate::Shutdown`), so a voice that ends after
 the restart finds the gate closed instead of calling a dead pointer. After a
-restart, `init()` finds the native engine still running and resets it.
+restart, `init()` finds the native engine still running and resets it. The
+one fork-specific piece is `compute` (see Known DartNative issues).
 
 To check it after a sync, run `dn_example` with `dn run`:
 
@@ -81,17 +82,20 @@ To check it after a sync, run `dn_example` with `dn run`:
 ## Known DartNative issues
 
 - **Android rebuilds fail with `mergeDebugJniLibFolders uses this output of
-  task compileFlutterBuildDebug`.** The first build after `dn clean` works,
+  task compileFlutterBuildDebug`**
+  ([DartNative#83](https://github.com/DartNative/dartnative/issues/83)). The first build after `dn clean` works,
   later ones fail. This happens with any package whose native code comes
   from a build hook. `dn_example/android/app/build.gradle.kts` has the
   workaround at the bottom; apps that use this package need the same lines
   until DartNative fixes it.
-- **Hot restart can hang after DartNative's `compute`.** Its `compute` runs on
-  a background pool (`runInBackground` and its workers). Those isolates stay
-  alive between calls, and `dn` kills them on hot restart. About one restart
-  in five then never finishes: `dn` prints "Performing hot restart..." and the
-  old session keeps running. This reproduces with a plain `compute` call and no
-  SoLoud code. `flutter_compat.dart` therefore defines `compute` with
+- **Hot restart can hang after DartNative's `compute`**
+  ([DartNative#82](https://github.com/DartNative/dartnative/issues/82)). Since
+  1.5.0, its `compute` runs on a background pool (`runInBackground` and its
+  workers). Those isolates stay alive between calls, and `dn` kills them on hot
+  restart. The restart then often never finishes, in a stock app as early as
+  the first one: `dn` prints "Performing hot restart..." and the old session
+  keeps running. This reproduces with a plain `compute` call and no SoLoud
+  code. `flutter_compat.dart` therefore defines `compute` with
   `Isolate.run`, so its isolates exit when the work is done. Don't export
   DartNative's `compute` again until this is fixed.
 - **`dn config --license-key` must run inside the app folder** (`dn_example/`),

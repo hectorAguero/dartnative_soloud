@@ -27,8 +27,9 @@ typedef ComputeCallback<M, R> = FutureOr<R> Function(M message);
 /// Not DartNative's `compute`. That one runs on a background pool whose
 /// isolates stay alive between calls, and a hot restart sometimes hangs for
 /// good while `dn` kills them (DartNative 1.5.0, reproduced with no SoLoud
-/// code involved). An isolate from `Isolate.run` is gone once its load
-/// finishes, so a restart has nothing to kill.
+/// code involved: https://github.com/DartNative/dartnative/issues/82). An
+/// isolate from `Isolate.run` is gone once its load finishes, so a restart
+/// has nothing to kill.
 Future<R> compute<M, R>(
   ComputeCallback<M, R> callback,
   M message, {
