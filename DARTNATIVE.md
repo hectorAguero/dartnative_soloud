@@ -3,8 +3,64 @@
 This repository is a fork of [alnitak/flutter_soloud](https://github.com/alnitak/flutter_soloud)
 that runs on [DartNative](https://dartnative.com) (iOS and Android). DartNative
 has no Flutter framework, only a stub `package:flutter`, so the fork carries a
-small patch on top of upstream. This file lists that patch and how to keep it
-current.
+small patch on top of upstream. This file explains how to use it, lists that
+patch, and how to keep it current.
+
+## Using it in a DartNative app
+
+Add the fork from git, pinned to a release tag:
+
+```yaml
+# your_app/pubspec.yaml
+dependencies:
+  flutter_soloud:
+    git:
+      url: https://github.com/hectorAguero/dartnative_soloud
+      ref: v5.2.2-dn.1
+```
+
+Then run `dn pub get`. The API is upstream's, including the import
+(`package:flutter_soloud/flutter_soloud.dart`), so
+[upstream's docs](https://github.com/alnitak/flutter_soloud#readme) apply.
+SoLoud's native code is built by `hook/build.dart` when the app builds. Keep
+the `DartNativePluginRegistrant.registerAll()` line that `dn create` puts in
+`main()`: it sets up `dartnative_path_provider`, which gives the package's
+loader its temporary folder.
+
+**Android needs one workaround.** Until DartNative fixes
+[DartNative#83](https://github.com/DartNative/dartnative/issues/83), every
+Android build after the first fails with `mergeDebugJniLibFolders uses this
+output of task compileFlutterBuildDebug`. Add this to the end of your app's
+`android/app/build.gradle.kts`:
+
+```kotlin
+afterEvaluate {
+    listOf("Debug", "Profile", "Release").forEach { variant ->
+        val compile = tasks.findByName("compileFlutterBuild$variant") ?: return@forEach
+        tasks.findByName("merge${variant}JniLibFolders")?.dependsOn(compile)
+    }
+}
+```
+
+`dn_example/` is a working app that uses the package; its `main.dart` plays a
+tone, an MP3 asset and an Opus asset.
+
+**Why git and not dartpub.dev:** `dn publish` packages only `lib/`, the
+pubspec and the docs, plus native code written as `ios/Classes` sources or an
+Android plugin module. SoLoud's C++ comes from a build hook, which it leaves
+out, so a dartpub.dev release would have no audio engine in it. Git
+dependencies run the hook, as path and pub.dev dependencies do. The fork moves
+to dartpub.dev once DartNative can ship build-hook packages there.
+
+## Releases
+
+Tags are `v<upstream version>-dn.<n>`: the upstream release the fork is
+based on, and the fork's own revision of it, starting at 1. `pubspec.yaml`
+keeps upstream's version. Each tag has a GitHub release with its notes.
+
+| Tag | Upstream | Notes |
+|---|---|---|
+| `v5.2.2-dn.1` | 5.2.2 | First DartNative release. Hot restart is safe while sounds play. |
 
 ## The patch
 
@@ -18,6 +74,7 @@ Everything else is upstream, untouched.
 | `bindings/darwin_engine_lifecycle.dart` | Rewritten as a stub that is never supported (no FlutterEngine, no MethodChannel). | Keep ours. If upstream changes the class's public API, mirror it in the stub. |
 | `bindings/bindings_player_ffi.dart` | No `dart:ui`; `currentEngineId` always returns `noEngineId`. | Take upstream's file, then remove `dart:ui` and restore the one-line getter. |
 | `pubspec.yaml` | Drops `flutter`, `flutter_test`, `path_provider`, `plugin_platform_interface` and the `flutter:` plugin/assets block; adds `dartnative`, `dartnative_path_provider`. | Take upstream's version and new dependencies, keep ours for everything listed here. |
+| `README.md` | A note at the top pointing to this file. | Keep upstream's README and the note above it. |
 | `dn_example/`, `DARTNATIVE.md`, `tool/dartnative_check.sh` | Fork-only. | — |
 
 Rules that keep the patch small:
@@ -26,8 +83,8 @@ Rules that keep the patch small:
   `android/`, `ios/`). DartNative never builds them, and deleting them turns
   every upstream edit to them into a modify/delete conflict.
 - **Don't rename the package in the source.** Every file imports
-  `package:flutter_soloud/…`, so a rename would conflict on every sync. If it
-  ships on dartpub.dev under another name, rename at publish time.
+  `package:flutter_soloud/…`, so a rename would conflict on every sync. Apps
+  depend on it as `flutter_soloud` from git.
 - **Route new Flutter APIs through `flutter_compat.dart`** rather than editing
   upstream code.
 
@@ -37,8 +94,8 @@ Two branches:
 
 - **`main`** mirrors upstream exactly. Never commit to it; keep it current with
   GitHub's "Sync fork" button or `gh repo sync hectorAguero/dartnative_soloud`.
-- **`dartnative`** is the DartNative version: the default branch, and what
-  gets published. `git diff main dartnative` is always the whole patch.
+- **`dartnative`** is the DartNative version: the default branch, and where
+  release tags go. `git diff main dartnative` is always the whole patch.
 
 Merge (don't rebase) each upstream release into `dartnative`, so every
 conflict is resolved once:
@@ -50,6 +107,15 @@ git switch -c sync/vX.Y.Z origin/dartnative
 git merge vX.Y.Z            # resolve conflicts with the table above
 tool/dartnative_check.sh --build
 git push -u origin sync/vX.Y.Z   # open a PR into dartnative
+```
+
+Once the PR is merged, tag the release and add it to the Releases table:
+
+```bash
+git switch dartnative && git pull
+git tag -a vX.Y.Z-dn.1 -m "flutter_soloud X.Y.Z for DartNative"
+git push origin vX.Y.Z-dn.1
+gh release create vX.Y.Z-dn.1 --title "vX.Y.Z-dn.1" --notes "…"
 ```
 
 Other DartNative work goes the same way: a feature branch from `dartnative`

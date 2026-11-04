@@ -1,3 +1,6 @@
+> [!NOTE]
+> **DartNative fork.** This is [flutter_soloud](https://github.com/alnitak/flutter_soloud) patched to run on [DartNative](https://dartnative.com) (iOS and Android), with the same API. To use it in a DartNative app, see [DARTNATIVE.md](DARTNATIVE.md#using-it-in-a-dartnative-app). The rest of this README is upstream's.
+
 A low-level audio plugin for Flutter.
 
 [![Pub Version](https://img.shields.io/pub/v/flutter_soloud?logo=dart)](https://pub.dev/packages/flutter_soloud)
