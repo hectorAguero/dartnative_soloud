@@ -70,10 +70,11 @@ Everything else is upstream, untouched.
 |---|---|---|
 | `lib/src/dartnative/flutter_compat.dart` | New. Provides the Flutter names the package uses (`kIsWeb`, `defaultTargetPlatform`, `debugPrint`, `compute`, `rootBundle`, typed data, `meta`) on top of `package:dartnative`. `compute` is `Isolate.run`, as in Flutter, not DartNative's (see below). | Fork-only, no conflicts. Add to it when upstream starts using another Flutter API. |
 | `lib/src/dartnative/path_provider_compat.dart` | New. `getTemporaryDirectory()` over `dartnative_path_provider`. | Fork-only. |
-| `soloud.dart`, `filters/filters.dart`, `filters/parametric_eq.dart`, `utils/loader_base.dart`, `utils/loader_io.dart`, `utils/loader_web.dart` | `package:flutter/*` imports (and `path_provider` in `loader_io.dart`) replaced by the compat imports. Nothing else. | Take upstream's file, then swap the imports again. |
+| `soloud.dart`, `filters/filters.dart`, `filters/parametric_eq.dart`, `filters/custom_filter.dart`, `vst3/vst3_host_ffi.dart`, `vst3/vst3_host_web.dart`, `utils/loader_base.dart`, `utils/loader_io.dart`, `utils/loader_web.dart` | `package:flutter/*` imports (and `path_provider` in `loader_io.dart`) replaced by the compat imports. Nothing else. | Take upstream's file, then swap the imports again. |
 | `bindings/darwin_engine_lifecycle.dart` | Rewritten as a stub that is never supported (no FlutterEngine, no MethodChannel). | Keep ours. If upstream changes the class's public API, mirror it in the stub. |
+| `bindings/android_engine_lifecycle.dart` | Rewritten as a stub that is never supported (no FlutterEngine, no MethodChannel, no Android plugin). | Keep ours. If upstream changes the class's public API, mirror it in the stub. |
 | `bindings/bindings_player_ffi.dart` | No `dart:ui`; `currentEngineId` always returns `noEngineId`. | Take upstream's file, then remove `dart:ui` and restore the one-line getter. |
-| `pubspec.yaml` | Drops `flutter`, `flutter_test`, `path_provider`, `plugin_platform_interface` and the `flutter:` plugin/assets block; adds `dartnative`, `dartnative_path_provider`. | Take upstream's version and new dependencies, keep ours for everything listed here. |
+| `pubspec.yaml` | Drops `flutter`, `flutter_test`, `path_provider`, `plugin_platform_interface` and the `flutter:` plugin/assets block; adds `dartnative`, `dartnative_path_provider`. Keeps `web: ^1.1.0`: `web` 1.1.2 needs Dart 3.13, newer than the DartNative SDK's. | Take upstream's version and new dependencies, keep ours for everything listed here. |
 | `README.md` | A note at the top pointing to this file. | Keep upstream's README and the note above it. |
 | `dn_example/`, `DARTNATIVE.md`, `tool/dartnative_check.sh` | Fork-only. | — |
 
