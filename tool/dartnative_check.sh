@@ -19,7 +19,8 @@ echo "== Flutter-only imports in lib/ and hook/"
 matches="$(grep -rnE --include='*.dart' \
   "['\"](package:(flutter|flutter_test|flutter_web_plugins|path_provider|plugin_platform_interface)/|dart:ui(_web)?['\"])" \
   lib hook)" || [ $? -eq 1 ] || { echo "import scan failed" >&2; exit 1; }
-leaks="$(printf '%s\n' "$matches" | grep -vE '^[^:]+:[0-9]+:[[:space:]]*//' || true)"
+leaks="$(printf '%s\n' "$matches" | grep -vE '^[^:]+:[0-9]+:[[:space:]]*//')" \
+  || [ $? -eq 1 ] || { echo "import scan failed" >&2; exit 1; }
 if [ -n "$leaks" ]; then
   echo "$leaks"
   echo "Route these through lib/src/dartnative/flutter_compat.dart." >&2
