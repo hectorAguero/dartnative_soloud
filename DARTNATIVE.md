@@ -27,9 +27,9 @@ the `DartNativePluginRegistrant.registerAll()` line that `dn create` puts in
 `main()`: it sets up `dartnative_path_provider`, which gives the package's
 loader its temporary folder.
 
-**DartNative before 1.5.1 needs one workaround on Android.** On those
-versions ([DartNative#83](https://github.com/DartNative/dartnative/issues/83),
-fixed in 1.5.1), every Android build after the first fails with
+**DartNative 1.5.0 needs one workaround on Android.** On affected versions
+([DartNative#83](https://github.com/DartNative/dartnative/issues/83),
+reported on 1.5.0 and fixed in 1.5.1), every Android build after the first fails with
 `mergeDebugJniLibFolders uses this output of task compileFlutterBuildDebug`.
 Upgrade DartNative, or add this to the end of your app's
 `android/app/build.gradle.kts`:
@@ -127,8 +127,9 @@ and a PR into `dartnative`. Changes meant for upstream branch from `main`.
 export to `lib/` or `hook/`. It then analyzes the package (`lib/` and
 `hook/`) and `dn_example` against the DartNative SDK, and
 with `--build` also builds the example for the iOS simulator and Android. After
-that, run `dn_example` on a device and press each button. Upstream's `test/`
-needs `flutter_test`, which the fork drops, so it is not run here.
+that, run `dn_example` on a device and press each button. The fork does not
+run upstream's `test/`: some of its Dart tests need `flutter_test`, which the
+fork drops.
 
 ## Hot restart
 
@@ -141,10 +142,11 @@ the restart finds the gate closed instead of calling a dead pointer. After a
 restart, `init()` finds the native engine still running and resets it. The
 one fork-specific piece is `compute` (see Known DartNative issues).
 
-Realtime stream feeders (`startFloat32Feeder`/`startInt16Feeder`, which run
-on their own isolate by default) live until their `dispose()`. A hot restart
-with one running ends that isolate without freeing its small native buffer,
-so dispose feeders before restarting when you can.
+Realtime stream feeders (`startFloat32Feeder`/`startInt16Feeder`) keep a
+small native buffer until their `dispose()`, on their own isolate by default
+or on the main one with `useIsolate: false`. A hot restart with one running
+drops that buffer without freeing it, so dispose feeders before restarting
+when you can.
 
 To check it after a sync, run `dn_example` with `dn run`:
 
@@ -157,11 +159,11 @@ To check it after a sync, run `dn_example` with `dn run`:
 ## Known DartNative issues
 
 - **Android rebuilds fail with `mergeDebugJniLibFolders uses this output of
-  task compileFlutterBuildDebug`** on DartNative 1.5.0 and older
+  task compileFlutterBuildDebug`** on affected DartNative versions
   ([DartNative#83](https://github.com/DartNative/dartnative/issues/83), fixed
   in 1.5.1). The first build after `dn clean` works, later ones fail, with any
-  package whose native code comes from a build hook. Apps on those versions
-  need the workaround at the bottom of
+  package whose native code comes from a build hook. Apps on an affected
+  version need the workaround at the bottom of
   `dn_example/android/app/build.gradle.kts`; it is harmless on newer ones.
 - **Hot restart could hang after DartNative's `compute`** on DartNative 1.5.0
   ([DartNative#82](https://github.com/DartNative/dartnative/issues/82), fixed

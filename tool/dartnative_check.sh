@@ -15,8 +15,11 @@ echo "== Flutter-only imports in lib/ and hook/"
 # Upstream code must reach Flutter APIs through lib/src/dartnative/. Matches
 # any quoted URI, so it also catches `export`, double quotes and the `if (...)`
 # lines of conditional imports; comment lines are skipped.
-leaks="$(grep -rnE "['\"](package:(flutter|flutter_test|path_provider|plugin_platform_interface)/|dart:ui['\"])" lib hook --include='*.dart' \
-  | grep -vE '^[^:]+:[0-9]+:[[:space:]]*//' || true)"
+# grep exits 1 for "no match"; anything higher is a real failure.
+matches="$(grep -rnE --include='*.dart' \
+  "['\"](package:(flutter|flutter_test|flutter_web_plugins|path_provider|plugin_platform_interface)/|dart:ui(_web)?['\"])" \
+  lib hook)" || [ $? -eq 1 ] || { echo "import scan failed" >&2; exit 1; }
+leaks="$(printf '%s\n' "$matches" | grep -vE '^[^:]+:[0-9]+:[[:space:]]*//' || true)"
 if [ -n "$leaks" ]; then
   echo "$leaks"
   echo "Route these through lib/src/dartnative/flutter_compat.dart." >&2
