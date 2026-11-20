@@ -16,7 +16,7 @@ dependencies:
   flutter_soloud:
     git:
       url: https://github.com/hectorAguero/dartnative_soloud
-      ref: v5.2.2-dn.1
+      ref: v5.3.1-dn.1
 ```
 
 Then run `dn pub get`. The API is upstream's, including the import
@@ -62,6 +62,7 @@ keeps upstream's version. Each tag has a GitHub release with its notes.
 | Tag | Upstream | Notes |
 |---|---|---|
 | `v5.2.2-dn.1` | 5.2.2 | First DartNative release. Hot restart is safe while sounds play. |
+| `v5.3.1-dn.1` | 5.3.1 | Upstream 5.3.0 and 5.3.1: realtime PCM streaming, custom audio sources and DSP filters. Tested on DartNative 1.8.0; `dn_example` builds on JDK 25. |
 
 ## The patch
 
