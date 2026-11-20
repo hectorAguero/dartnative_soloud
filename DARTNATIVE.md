@@ -16,7 +16,7 @@ dependencies:
   flutter_soloud:
     git:
       url: https://github.com/hectorAguero/dartnative_soloud
-      ref: v5.2.2-dn.1
+      ref: v5.3.1-dn.1
 ```
 
 Then run `dn pub get`. The API is upstream's, including the import
@@ -62,6 +62,7 @@ keeps upstream's version. Each tag has a GitHub release with its notes.
 | Tag | Upstream | Notes |
 |---|---|---|
 | `v5.2.2-dn.1` | 5.2.2 | First DartNative release. Hot restart is safe while sounds play. |
+| `v5.3.1-dn.1` | 5.3.1 | Upstream 5.3.0 and 5.3.1: realtime PCM streaming, custom audio sources and DSP filters. Tested on DartNative 1.8.0; `dn_example` builds on JDK 25. |
 
 ## The patch
 
@@ -158,6 +159,24 @@ To check it after a sync, run `dn_example` with `dn run`:
 
 ## Known DartNative issues
 
+- **Android builds fail on JDK 25 with apps from `dn create`** (checked on
+  DartNative 1.8.0). Its template uses Gradle 8.14, which can't run on
+  JDK 25. `dn` uses `dn config --jdk-dir` if set, else Android Studio's
+  bundled JDK (25 in current releases), else `JAVA_HOME`, then `PATH`. The
+  Gradle error is just the JDK version, e.g. `25.0.4`. Point
+  `dn config --jdk-dir` at JDK 17 or 21, or move the app to AGP 9 as
+  `dn_example` does: AGP 9.3.3, Gradle 9.5.0 and Kotlin 2.4.20 (Flutter
+  3.50's defaults, with AGP's latest 9.3 patch; AGP 9.3 needs Gradle 9.5).
+  Apply the changes in its four Gradle files to yours rather than copying
+  the files, which would replace your app ID and signing:
+  `settings.gradle.kts`, the wrapper's `gradle-wrapper.properties`,
+  `gradle.properties` and `app/build.gradle.kts`. The app file keeps `id("kotlin-android")` and
+  moves `jvmTarget` into a top-level `kotlin { compilerOptions { … } }`
+  block. `gradle.properties` has three opt-outs because DartNative's Gradle
+  plugin predates AGP 9; without `android.sourceset.disallowProvider=false`
+  it fails with `You cannot add Provider instances to the Android SourceSet
+  API`. AGP 10 drops the opt-outs, so moving to it needs a DartNative
+  plugin that supports AGP 9's new DSL.
 - **Android rebuilds fail with `mergeDebugJniLibFolders uses this output of
   task compileFlutterBuildDebug`** on affected DartNative versions
   ([DartNative#83](https://github.com/DartNative/dartnative/issues/83), fixed
