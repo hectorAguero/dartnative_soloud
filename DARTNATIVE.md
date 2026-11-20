@@ -165,12 +165,12 @@ To check it after a sync, run `dn_example` with `dn run`:
   bundled JDK (25 in current releases), else `JAVA_HOME`, then `PATH`. The
   Gradle error is just the JDK version, e.g. `25.0.4`. Point
   `dn config --jdk-dir` at JDK 17 or 21, or move the app to AGP 9 as
-  `dn_example` does, with Flutter 3.50's defaults: AGP 9.3.1, Gradle 9.5.0
-  and Kotlin 2.4.20 (AGP 9.3 needs Gradle 9.5). Apply the changes in its
-  four Gradle files to yours rather than copying the files, which would
-  replace your app ID and signing: `settings.gradle.kts`, the wrapper's
-  `gradle-wrapper.properties`, `gradle.properties` and
-  `app/build.gradle.kts`. The app file keeps `id("kotlin-android")` and
+  `dn_example` does: AGP 9.3.3, Gradle 9.5.0 and Kotlin 2.4.20 (Flutter
+  3.50's defaults, with AGP's latest 9.3 patch; AGP 9.3 needs Gradle 9.5).
+  Apply the changes in its four Gradle files to yours rather than copying
+  the files, which would replace your app ID and signing:
+  `settings.gradle.kts`, the wrapper's `gradle-wrapper.properties`,
+  `gradle.properties` and `app/build.gradle.kts`. The app file keeps `id("kotlin-android")` and
   moves `jvmTarget` into a top-level `kotlin { compilerOptions { … } }`
   block. `gradle.properties` has three opt-outs because DartNative's Gradle
   plugin predates AGP 9; without `android.sourceset.disallowProvider=false`
