@@ -27,10 +27,11 @@ the `DartNativePluginRegistrant.registerAll()` line that `dn create` puts in
 `main()`: it sets up `dartnative_path_provider`, which gives the package's
 loader its temporary folder.
 
-**Android needs one workaround.** Until DartNative fixes
-[DartNative#83](https://github.com/DartNative/dartnative/issues/83), every
-Android build after the first fails with `mergeDebugJniLibFolders uses this
-output of task compileFlutterBuildDebug`. Add this to the end of your app's
+**DartNative before 1.5.1 needs one workaround on Android.** On those
+versions ([DartNative#83](https://github.com/DartNative/dartnative/issues/83),
+fixed in 1.5.1), every Android build after the first fails with
+`mergeDebugJniLibFolders uses this output of task compileFlutterBuildDebug`.
+Upgrade DartNative, or add this to the end of your app's
 `android/app/build.gradle.kts`:
 
 ```kotlin
@@ -122,10 +123,12 @@ gh release create vX.Y.Z-dn.1 --title "vX.Y.Z-dn.1" --notes "…"
 Other DartNative work goes the same way: a feature branch from `dartnative`
 and a PR into `dartnative`. Changes meant for upstream branch from `main`.
 
-`tool/dartnative_check.sh` fails if upstream added a Flutter-only import. It
-then analyzes the package and `dn_example` against the DartNative SDK, and
+`tool/dartnative_check.sh` fails if upstream added a Flutter-only import or
+export to `lib/` or `hook/`. It then analyzes the package (`lib/` and
+`hook/`) and `dn_example` against the DartNative SDK, and
 with `--build` also builds the example for the iOS simulator and Android. After
-that, run `dn_example` on a device and press each button.
+that, run `dn_example` on a device and press each button. Upstream's `test/`
+needs `flutter_test`, which the fork drops, so it is not run here.
 
 ## Hot restart
 
@@ -138,6 +141,11 @@ the restart finds the gate closed instead of calling a dead pointer. After a
 restart, `init()` finds the native engine still running and resets it. The
 one fork-specific piece is `compute` (see Known DartNative issues).
 
+Realtime stream feeders (`startFloat32Feeder`/`startInt16Feeder`, which run
+on their own isolate by default) live until their `dispose()`. A hot restart
+with one running ends that isolate without freeing its small native buffer,
+so dispose feeders before restarting when you can.
+
 To check it after a sync, run `dn_example` with `dn run`:
 
 1. Press **Init**, then **MP3 asset** or **Opus asset**.
@@ -149,21 +157,19 @@ To check it after a sync, run `dn_example` with `dn run`:
 ## Known DartNative issues
 
 - **Android rebuilds fail with `mergeDebugJniLibFolders uses this output of
-  task compileFlutterBuildDebug`**
-  ([DartNative#83](https://github.com/DartNative/dartnative/issues/83)). The first build after `dn clean` works,
-  later ones fail. This happens with any package whose native code comes
-  from a build hook. `dn_example/android/app/build.gradle.kts` has the
-  workaround at the bottom; apps that use this package need the same lines
-  until DartNative fixes it.
-- **Hot restart can hang after DartNative's `compute`**
-  ([DartNative#82](https://github.com/DartNative/dartnative/issues/82)). Since
-  1.5.0, its `compute` runs on a background pool (`runInBackground` and its
-  workers). Those isolates stay alive between calls, and `dn` kills them on hot
-  restart. The restart then often never finishes, in a stock app as early as
-  the first one: `dn` prints "Performing hot restart..." and the old session
-  keeps running. This reproduces with a plain `compute` call and no SoLoud
-  code. `flutter_compat.dart` therefore defines `compute` with
-  `Isolate.run`, so its isolates exit when the work is done. Don't export
-  DartNative's `compute` again until this is fixed.
+  task compileFlutterBuildDebug`** on DartNative 1.5.0 and older
+  ([DartNative#83](https://github.com/DartNative/dartnative/issues/83), fixed
+  in 1.5.1). The first build after `dn clean` works, later ones fail, with any
+  package whose native code comes from a build hook. Apps on those versions
+  need the workaround at the bottom of
+  `dn_example/android/app/build.gradle.kts`; it is harmless on newer ones.
+- **Hot restart could hang after DartNative's `compute`** on DartNative 1.5.0
+  ([DartNative#82](https://github.com/DartNative/dartnative/issues/82), fixed
+  in 1.5.1). Its `compute` runs on a background pool whose isolates stay
+  alive between calls, and `dn` killing them on hot restart often left the
+  restart unfinished. `flutter_compat.dart` defines `compute` with
+  `Isolate.run`, as Flutter does, so its isolates exit when the work is done
+  and the fork does not depend on that pool. Keep it that way unless there is
+  a reason to switch.
 - **`dn config --license-key` must run inside the app folder** (`dn_example/`),
   not the repository root.
