@@ -161,7 +161,7 @@ To check it after a sync, run `dn_example` with `dn run`:
 - **Android builds fail on JDK 25 with apps from `dn create`** (checked on
   DartNative 1.8.0). Its template uses Gradle 8.14, which can't run on
   JDK 25. `dn` uses `dn config --jdk-dir` if set, else Android Studio's
-  bundled JDK (25 in current releases), else `JAVA_HOME` or `PATH`. The
+  bundled JDK (25 in current releases), else `JAVA_HOME`, then `PATH`. The
   Gradle error is just the JDK version, e.g. `25.0.4`. Point
   `dn config --jdk-dir` at JDK 17 or 21, or move the app to AGP 9 as
   `dn_example` does, with Flutter 3.50's defaults: AGP 9.3.1, Gradle 9.5.0
