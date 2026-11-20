@@ -54,12 +54,13 @@ dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
 }
 
-// Workaround for a DartNative Gradle bug: compileFlutterBuild<Variant> writes
-// the libraries built by package build hooks (here libflutter_soloud_plugin.so)
-// into build/native_assets/android/jniLibs, but merge<Variant>JniLibFolders
-// reads that folder without depending on it. Gradle then fails every
-// incremental build (the first build after `dn clean` passes). Remove once
-// DartNative declares the dependency itself.
+// Workaround for DartNative 1.5.0 (DartNative#83, fixed in 1.5.1):
+// compileFlutterBuild<Variant> writes the libraries built by package build
+// hooks (here libflutter_soloud_plugin.so) into
+// build/native_assets/android/jniLibs, but merge<Variant>JniLibFolders reads
+// that folder without depending on it, so every build after the first fails.
+// On 1.5.1 and newer the DartNative plugin adds this dependency itself and
+// this block does nothing.
 afterEvaluate {
     listOf("Debug", "Profile", "Release").forEach { variant ->
         val compile = tasks.findByName("compileFlutterBuild$variant") ?: return@forEach

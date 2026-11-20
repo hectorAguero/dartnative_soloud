@@ -159,15 +159,21 @@ To check it after a sync, run `dn_example` with `dn run`:
 ## Known DartNative issues
 
 - **Android builds fail on JDK 25 with apps from `dn create`** (checked on
-  DartNative 1.8.0). Its template uses Gradle 8.14, which runs on JDK 17 to
-  24, and `dn` uses Android Studio's bundled JDK, which is now 25. The Gradle
-  error is just the version, `25.0.4`. Point `dn config --jdk-dir` at JDK 17
-  or 21, or move the app to AGP 9 and Gradle 9.1 or newer. `dn_example` does
-  the latter with Flutter 3.50's defaults (AGP 9.3.1, Gradle 9.5.0, Kotlin
-  2.4.20). DartNative's Gradle plugin predates AGP 9, so it also needs the
-  three opt-outs in `dn_example/android/gradle.properties`; without
-  `android.sourceset.disallowProvider=false` it fails with `You cannot add
-  Provider instances to the Android SourceSet API`.
+  DartNative 1.8.0). Its template uses Gradle 8.14, which can't run on
+  JDK 25, and `dn` picks Android Studio's bundled JDK (25 in current
+  releases) unless `dn config --jdk-dir` names another. The Gradle error is
+  just the JDK version, e.g. `25.0.4`. Point `dn config --jdk-dir` at JDK 17
+  or 21, or move the app to AGP 9 as `dn_example` does, with Flutter 3.50's
+  defaults: AGP 9.3.1, Gradle 9.5.0 and Kotlin 2.4.20 (AGP 9.3 needs Gradle
+  9.5). Copy all four of its Gradle files: `settings.gradle.kts`, the
+  wrapper's `gradle-wrapper.properties`, `gradle.properties` and
+  `app/build.gradle.kts`. The app file keeps `id("kotlin-android")` and moves
+  `jvmTarget` into a top-level `kotlin { compilerOptions { … } }` block.
+  `gradle.properties` has three opt-outs because DartNative's Gradle plugin
+  predates AGP 9; without `android.sourceset.disallowProvider=false` it
+  fails with `You cannot add Provider instances to the Android SourceSet
+  API`. AGP 10 drops the opt-outs, so moving to it needs a DartNative
+  plugin that supports AGP 9's new DSL.
 - **Android rebuilds fail with `mergeDebugJniLibFolders uses this output of
   task compileFlutterBuildDebug`** on affected DartNative versions
   ([DartNative#83](https://github.com/DartNative/dartnative/issues/83), fixed
